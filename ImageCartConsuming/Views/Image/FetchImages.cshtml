@@ -1,0 +1,84 @@
+﻿@model IEnumerable<ImageCartConsuming.Models.FetchImageCartDTO>
+
+@{
+    ViewData["Title"] = "Fetch Images";
+}
+
+<h1>Fetch Images</h1>
+
+<p>
+    <button id="deleteSelected" type="button" class="btn btn-danger">Delete Selected</button>
+</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>
+                <input type="checkbox" id="selectAll" />
+            </th>
+            <th>@Html.DisplayNameFor(model => model.ImageId)</th>
+            <th>@Html.DisplayNameFor(model => model.ImageName)</th>
+            <th>Image</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <input type="checkbox" value="@item.ImageId" class="selectItem" />
+                </td>
+                <td>@item.ImageId</td>
+                <td>@item.ImageName</td>
+                <td><img src="@($"https://localhost:7015/{item.Images}")" alt="@item.ImageName" width="80" height="80" /></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            // Select/Deselect all checkboxes
+            $("#selectAll").click(function () {
+                $(".selectItem").prop("checked", $(this).prop("checked"));
+            });
+
+            // Delete selected items
+            $("#deleteSelected").click(function () {
+                let selectedIds = [];
+
+                $(".selectItem:checked").each(function () {
+                    selectedIds.push(parseInt($(this).val()));
+                });
+
+                if (selectedIds.length === 0) {
+                    alert("Please select at least one image to delete.");
+                    return;
+                }
+
+                if (!confirm("Are you sure you want to delete selected images?")) {
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Image/SoftDeleteImages', // Controller Action
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(selectedIds),
+                    success: function (response) {
+                        alert(response.message);
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        alert("Error: " + xhr.responseText);
+                    }
+                });
+            });
+
+        });
+    </script>
+}
